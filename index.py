@@ -672,6 +672,11 @@ def matchDetailAggregator (matchid):
 
 
 def fuzzify (bot,mid,top,x):
+    bot = int(bot)
+    mid = int(mid)
+    top = int(top)
+    x = int(x)
+    
     if x <= bot:
         return [1,0,0]
 
@@ -992,7 +997,7 @@ def final_calculation(fuzzified_match, pos1_inference, pos2_inference, pos3_infe
                     pos1_fuzzy = selectedhero.drop(columns=['hero','pos'])
 
                     # turn list of strings to list of float numbers
-                    fuzzyvalues = [[float(num) for num in item.strip('[]').split(',')] for item in pos1_fuzzy[cols]]
+                    fuzzyvalues = [[np.float64(num) for num in item.strip('[]').split(',')] for item in pos1_fuzzy[cols]]
 
                     # replace categorical values in inference table with numerical fuzzy values in fuzzyvalues list
                     pos1_inferenced[cols] = pos1_inferenced[cols].replace('low',fuzzyvalues[i][0])
@@ -1010,7 +1015,7 @@ def final_calculation(fuzzified_match, pos1_inference, pos2_inference, pos3_infe
                 pos2_inferenced = pos2_inference.copy()
                 for cols in pos2_inferenced.columns[1:-1]:
                     pos2_fuzzy = selectedhero.drop(columns=['hero','pos'])
-                    fuzzyvalues = [[float(num) for num in item.strip('[]').split(',')] for item in pos2_fuzzy[cols]]
+                    fuzzyvalues = [[np.float64(num) for num in item.strip('[]').split(',')] for item in pos2_fuzzy[cols]]
                     pos2_inferenced[cols] = pos2_inferenced[cols].replace('low',fuzzyvalues[i][0])
                     pos2_inferenced[cols] = pos2_inferenced[cols].replace('medium',fuzzyvalues[i][1])
                     pos2_inferenced[cols] = pos2_inferenced[cols].replace('high',fuzzyvalues[i][2])
@@ -1022,7 +1027,7 @@ def final_calculation(fuzzified_match, pos1_inference, pos2_inference, pos3_infe
                 pos3_inferenced = pos3_inference.copy()
                 for cols in pos3_inferenced.columns[1:-1]:
                     pos3_fuzzy = selectedhero.drop(columns=['hero','pos'])
-                    fuzzyvalues = [[float(num) for num in item.strip('[]').split(',')] for item in pos3_fuzzy[cols]]
+                    fuzzyvalues = [[np.float64(num) for num in item.strip('[]').split(',')] for item in pos3_fuzzy[cols]]
                     pos3_inferenced[cols] = pos3_inferenced[cols].replace('low',fuzzyvalues[i][0])
                     pos3_inferenced[cols] = pos3_inferenced[cols].replace('medium',fuzzyvalues[i][1])
                     pos3_inferenced[cols] = pos3_inferenced[cols].replace('high',fuzzyvalues[i][2])
@@ -1034,7 +1039,7 @@ def final_calculation(fuzzified_match, pos1_inference, pos2_inference, pos3_infe
                 pos4_inferenced = pos4_inference.copy()
                 for cols in pos4_inferenced.columns[1:-1]:
                     pos4_fuzzy = selectedhero.drop(columns=['hero','pos'])
-                    fuzzyvalues = [[float(num) for num in item.strip('[]').split(',')] for item in pos4_fuzzy[cols]]
+                    fuzzyvalues = [[np.float64(num) for num in item.strip('[]').split(',')] for item in pos4_fuzzy[cols]]
                     pos4_inferenced[cols] = pos4_inferenced[cols].replace('low',fuzzyvalues[i][0])
                     pos4_inferenced[cols] = pos4_inferenced[cols].replace('medium',fuzzyvalues[i][1])
                     pos4_inferenced[cols] = pos4_inferenced[cols].replace('high',fuzzyvalues[i][2])
@@ -1046,7 +1051,7 @@ def final_calculation(fuzzified_match, pos1_inference, pos2_inference, pos3_infe
                 pos5_inferenced = pos5_inference.copy()
                 for cols in pos5_inferenced.columns[1:-1]:
                     pos5_fuzzy = selectedhero.drop(columns=['hero','pos'])
-                    fuzzyvalues = [[float(num) for num in item.strip('[]').split(',')] for item in pos5_fuzzy[cols]]
+                    fuzzyvalues = [[np.float64(num) for num in item.strip('[]').split(',')] for item in pos5_fuzzy[cols]]
                     pos5_inferenced[cols] = pos5_inferenced[cols].replace('low',fuzzyvalues[i][0])
                     pos5_inferenced[cols] = pos5_inferenced[cols].replace('medium',fuzzyvalues[i][1])
                     pos5_inferenced[cols] = pos5_inferenced[cols].replace('high',fuzzyvalues[i][2])
@@ -1084,7 +1089,7 @@ def convert_to_categorical(dataframe):
       q3 = dataframe[cols].quantile(0.75)
       max = dataframe[cols].max()
       print(min,q1,q3,max)
-      dataframe[cols] = pd.cut(dataframe[cols], bins=[min-1, q1, q3, max+1], labels=['jelek', 'sedang', 'bagus'])
+      dataframe[cols] = pd.cut(dataframe[cols], bins=[min-1, q1-0.001, q3+0.001, max+1], labels=['jelek', 'sedang', 'bagus'])
   return dataframe
 
 st.write('# Dota 2 Player Performance Prediction')
@@ -1109,7 +1114,7 @@ if chosen:
     try:
         fuzzified_match = getMatchByID(chosen, fuzzy_limits)
         if(fuzzified_match.empty):
-            raise Exception('MatchID tidak ditemukanaaa')
+            raise Exception('MatchID tidak ditemukan')
         selectedMatch = matchDetailAggregator([chosen])
         inference_rules = getAllRules()
         pos_inference = get_inference_data(inference_rules)
@@ -1123,4 +1128,4 @@ if chosen:
                 finalscore = convert_to_categorical(finalscore)
                 st.write(finalscore)        
     except Exception as e: 
-        st.write(f"Mohon Parse match terlebih dahulu di https://stratz.com/matches/{chosen}")  
+        st.write(f"{e}, Mohon Parse match terlebih dahulu di https://stratz.com/matches/{chosen}")  
